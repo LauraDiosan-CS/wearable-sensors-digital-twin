@@ -11,27 +11,27 @@
   arr/.style={-{Stealth[length=2.2mm]}, semithick},
   lab/.style={font=\scriptsize, inner sep=1.5pt},
 ]
-\node[io] (wear) at (0,0) {\textbf{Wearable}\\single-lead ECG\\PPG, motion};
-\node[agent] (mon) at (3.5,0) {\textbf{Signal Monitoring}\\denoising $D_\phi$\\quality $Q_\psi$};
-\node[agent] (pred) at (7.7,1.25) {\textbf{Physiological}\\\textbf{Prediction}\\$F_\omega$: RR / HR forecast};
-\node[agent] (arr) at (7.7,-1.25) {\textbf{Arrhythmia}\\\textbf{Detection}\\$f_\theta$: beat $\to$ \{N,S,V,F,Q\}};
-\node[agent] (rec) at (11.9,0) {\textbf{Clinical}\\\textbf{Recommendation}\\grounded report $R_W$};
+\node[io] (wear) at (0,0) {\textbf{Wearable}\\ECG, heart rate,\\motion};
+\node[agent] (mon) at (3.5,0) {\textbf{Signal Monitoring}\\noise removal,\\quality check};
+\node[agent] (pred) at (7.7,1.25) {\textbf{Physiological}\\\textbf{Prediction}\\heart-rate forecast};
+\node[agent] (arr) at (7.7,-1.25) {\textbf{Arrhythmia}\\\textbf{Detection}\\label for every beat};
+\node[agent] (rec) at (11.9,0) {\textbf{Clinical}\\\textbf{Recommendation}\\report};
 \node[human] (clin) at (15.8,0) {\textbf{Clinician}\\human in\\the loop};
-\node[agent] (cal) at (3.5,-3.7) {\textbf{Twin Calibration}\\$\hat\vartheta_p$ from clean\\normal beats};
-\node[twinbox] (twin) at (9.5,-3.7) {\textbf{Cardiac digital twin} $\twin_p(t)$\\personal ECG model $g(\hat\vartheta_p,\cdot)$\\rhythm state, history};
+\node[agent] (cal) at (3.5,-3.7) {\textbf{Twin Calibration}\\fits the twin to\\normal beats};
+\node[twinbox] (twin) at (9.5,-3.7) {\textbf{Cardiac digital twin}\\model of the patient's heartbeat,\\rhythm and history};
 
-\draw[arr] (wear) -- node[lab, above]{$\tilde x(t)$} (mon);
-\draw[arr] (mon.east) -- node[lab, above left, pos=0.5]{$\hat x$, $q$} (pred.west);
+\draw[arr] (wear) -- node[lab, above]{ECG} (mon);
+\draw[arr] (mon.east) -- node[lab, above left, pos=0.5]{clean signal} (pred.west);
 \draw[arr] (mon.east) -- (arr.west);
-\draw[arr] (mon.south) -- node[lab, right]{clean beats, RR} (cal.north);
-\draw[arr] (cal) -- node[lab, above]{update $\hat\vartheta_p$} (twin);
-\draw[arr] (arr.south |- twin.north) -- node[lab, left]{deviation $d_k$} (arr.south);
-\draw[arr] (pred.east) -- node[lab, above right, pos=0.35]{$\hat h$} (rec.west);
-\draw[arr] (arr.east) -- node[lab, below right, pos=0.35]{$\hat y_k$} (rec.west);
+\draw[arr] (mon.south) -- node[lab, right]{clean beats} (cal.north);
+\draw[arr] (cal) -- node[lab, above]{update} (twin);
+\draw[arr] (arr.south |- twin.north) -- node[lab, left]{deviation score} (arr.south);
+\draw[arr] (pred.east) -- node[lab, above right, pos=0.35]{forecast} (rec.west);
+\draw[arr] (arr.east) -- node[lab, below right, pos=0.35]{beat labels} (rec.west);
 \draw[arr] (rec.south |- twin.north) -- node[lab, right]{twin state} (rec.south);
 \draw[arr] (rec) -- node[lab, above]{report} (clin);
 \draw[arr, dashed] (clin.south) |- node[lab, right, pos=0.3]{feedback} (twin.east);
 \end{tikzpicture}}
-\captionof{figure}{Graphical abstract: five agents share a patient-specific cardiac twin; the clinician's feedback updates the twin.}
+\captionof{figure}{Graphical abstract: five agents share a model of the patient's heart (the twin); the clinician's feedback updates it.}
 \label{fig:graphicalAbstract}
 \end{center}

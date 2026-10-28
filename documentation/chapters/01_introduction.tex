@@ -1,14 +1,6 @@
 \chapter{Introduction}
 \label{chapter:introduction}
 
-\section{What? Why? How?}
-\label{section:what}
+Cardiovascular diseases are the leading cause of death worldwide, with an estimated 19.8 million deaths in 2022 \cite{who2025cvd}. Smartwatches can already screen people for heart-rhythm problems, but a single-lead wearable ECG is noisy and limited on its own \cite{bayoumy2021smart}. Digital twins, models of one patient that are updated with that patient's data, are a promising way to personalise monitoring \cite{corralacero2020digital}. However, current cardiac twins are mostly built from hospital data such as medical imaging \cite{gillette2021framework}.
 
-Cardiovascular diseases are the leading cause of death worldwide, with an estimated 19.8 million deaths in 2022 \cite{who2025cvd}. Smartwatches can already screen large populations for atrial fibrillation \cite{perez2019large}, but single-lead wearable ECG is noisy and of limited diagnostic value on its own \cite{bayoumy2021smart}. Digital twins, patient-specific models updated from the patient's own data, are a promising way to personalise monitoring \cite{corralacero2020digital}. Current cardiovascular twins, however, are mostly simulation models built from clinical data \cite{coorey2022health,gillette2021framework}.
-
-We build a lightweight twin from wearable data alone: a dynamical ECG model \cite{mcsharry2003dynamical} calibrated to the wearer's beats, combined with learned models for denoising, arrhythmia detection and heart-rate forecasting. Five agents share the twin and write a report for a clinician. The key addition is a per-beat score of how far each beat is from the patient's own normal.
-
-\section{Paper structure and original contribution(s)}
-\label{section:structure}
-
-Chapter~\ref{section:scientificProblem} defines the problem, the five agent sub-problems and the evaluation protocol. Chapter~\ref{chapter:stateOfArt} surveys related work, and Chapter~\ref{chapter:concl} lists the next steps.
+We build a simple twin from wearable data alone: a heartbeat model \cite{mcsharry2003dynamical} fitted to the wearer's own beats, combined with machine-learning models that clean the signal, detect arrhythmias and forecast heart rate. Five agents share the twin and write a report for a clinician. The key idea is to measure how far each new beat is from the patient's own normal.

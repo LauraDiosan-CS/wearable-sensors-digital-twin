@@ -5,7 +5,9 @@
 
 % Based on the course template (2026-2027/Report/texModel/model.tex).
 % Changes to the template: utf8 input (author names with diacritics), tikz/booktabs/tabularx
-% for the graphical abstract and tables, and the plainurl bibliography style (plain + DOI/URL).
+% for the graphical abstract and tables, pgfgantt for the work plan, compact chapter headings
+% (titlesec), a chapters-only table of contents without the lists of tables/figures/algorithms,
+% and the plainurl bibliography style (plain + DOI/URL).
 
 \documentclass[runningheads,a4paper,11pt]{report}
 
@@ -62,10 +64,10 @@
   \color{lime}\leaders\hrule height \footrulewidth\hfill}}
 
 % ---- team placeholders: fill these in -------------------------------------------
-\newcommand{\teamname}{[team name]}
-\newcommand{\memberA}{[Member A]}
-\newcommand{\memberB}{[Member B]}
-\newcommand{\memberC}{[Member C]}
+\newcommand{\teamname}{CardiacTwin}
+\newcommand{\memberA}{Marc Grec}
+\newcommand{\memberB}{Mihai Moldovan}
+\newcommand{\memberC}{Adrien-Jeno Lorincz}
 % ---------------------------------------------------------------------------------
 
 \hypersetup{
@@ -79,9 +81,6 @@ colorlinks=true,
 linkcolor=red,
 citecolor=green,
 }
-
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\twin}{\mathcal{T}}
 
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{0}
@@ -103,17 +102,9 @@ FACULTY OF MATHEMATICS AND COMPUTER SCIENCE
 
 \Huge \textbf{AI-Enabled Cardiac Digital Twin\\from Wearable Sensors}
 
-\vspace{0.6cm}
-
-\Large Personalised, multi-agent monitoring of single-lead ECG
-
 \vspace{1cm}
 
 \normalsize -- Advanced Machine Learning report --
-
-\vspace{0.3cm}
-
-\normalsize Milestone 1 (Seminar 3): problem description and survey of related work
 
 \end{center}
 
@@ -124,7 +115,7 @@ FACULTY OF MATHEMATICS AND COMPUTER SCIENCE
 \Large{\textbf{Authors}}\\
 \normalsize
 \memberA, [specialisation], [group], [email]\\
-\memberB, [specialisation], [group], [email]\\
+\memberB, AI4CI, 270, mihai.moldovan2@stud.ubbcluj.ro\\
 \memberC, [specialisation], [group], [email]
 \end{flushright}
 
@@ -155,7 +146,6 @@ FACULTY OF MATHEMATICS AND COMPUTER SCIENCE
 \input{chapters/01_introduction}
 \input{chapters/02_problem}
 \input{chapters/03_related_work}
-\input{chapters/04_conclusion}
 
 \bibliographystyle{plainurl}
 {\small\setstretch{1.0}\bibliography{references}}

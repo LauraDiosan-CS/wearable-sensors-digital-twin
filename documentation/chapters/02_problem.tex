@@ -4,76 +4,52 @@
 \section{Problem definition}
 \label{section:problemDefinition}
 
-Wearable ECG is hard to use for three reasons:
+\paragraph{Informal description.} Smartwatches and chest patches can record a single-lead ECG during everyday life, but these recordings are hard to use for three reasons:
 \begin{itemize}
-	\item \textbf{Noise.} Motion, muscle and electrode artefacts corrupt the signal, so its quality has to be checked before any analysis \cite{satija2018review}.
-	\item \textbf{Volume.} A single lead at 250~Hz gives 21.6 million samples per day.
-	\item \textbf{Inter-patient variability.} Classifiers tested on unseen patients do much worse, especially on supraventricular beats \cite{dechazal2004automatic}, which led to patient-specific models \cite{kiranyaz2016realtime}.
+	\item \textbf{Noise.} The person is moving, and wearable sensors have many sources of error, so the signal is often disturbed \cite{bayoumy2021smart}.
+	\item \textbf{Volume.} A wearable records all day, every day, which is far more data than a clinician can read.
+	\item \textbf{Every patient is different.} ECG shapes vary from person to person, so models trained on other people make more mistakes on a new patient \cite{dechazal2004automatic,kiranyaz2016realtime}.
 \end{itemize}
 
-A digital twin is a model of one individual that is continually updated from their data and used for monitoring and decision support \cite{corralacero2020digital,niederer2021scaling}. Existing cardiac twins are biophysical models built from imaging and 12-lead ECG \cite{gillette2021framework}, data a wearable does not provide. We instead use a low-dimensional ECG model \cite{mcsharry2003dynamical} calibrated to the wearer's clean beats, together with learned models, split across the five agents of the course brief. The output is a report for a clinician; the system does not diagnose.
+Our idea is a \emph{cardiac digital twin}: a model of one patient's heart that is kept up to date with that patient's own data \cite{corralacero2020digital}. Existing cardiac twins are built from hospital imaging \cite{gillette2021framework}; ours uses only wearable data. It is a simple mathematical model of a heartbeat \cite{mcsharry2003dynamical}, adjusted to the patient's own normal beats. When a new beat looks very different from what the twin expects, it is flagged as unusual for this patient. As in the course brief, five agents share the twin: Signal Monitoring, Arrhythmia Detection, Physiological Prediction, Twin Calibration and Clinical Recommendation. The result is a short report for a doctor; the system does not make diagnoses.
 
-\paragraph{Why an intelligent algorithm?} Fixed filters and thresholds break down under noise and individual variation. On single-lead ambulatory ECG, a deep network exceeds the average cardiologist's $F_1$ score \cite{hannun2019cardiologist}. Learning is also needed for denoising, for forecasting heart rate and for calibrating the twin, which is an inverse problem. The agent layer decides which models to run and when the signal is too poor to trust.
+\paragraph{Why an intelligent algorithm?} Fixed rules fail when the signal is noisy or the patient is atypical, while deep networks trained on large datasets classify heart rhythms from single-lead ECG as well as cardiologists \cite{hannun2019cardiologist}. Learning is also needed to clean the signal, forecast heart rate and fit the twin to each patient.
 
 \section{Formal problem statement}
 \label{section:formal}
 
-\paragraph{Signals.} For patient $p$ the wearable records $\tilde x_p[n] \in \R^{C}$ (usually $C=1$) at $f_s$~Hz, possibly with auxiliary signals $s_p[n]$ (optical heart rate, motion). We assume
+The input is a noisy ECG signal from a wearable, possibly together with heart rate and motion:
 \begin{equation}
-\tilde x_p[n] = x_p[n] + \eta[n],
-\label{eq:noise}
+\tilde x(t) = x(t) + \eta(t),
 \end{equation}
-where $x_p$ is the clean ECG and $\eta$ is baseline wander, muscle and electrode-motion artefact (the noise types of the MIT-BIH Noise Stress Test Database \cite{moody1984noise}) plus powerline interference. R peaks $r_k$ give RR intervals $RR_k = r_k - r_{k-1}$ and beats $b_k \in \R^{L \times C}$.
+where $x$ is the true heart signal and $\eta$ is the noise. From $\tilde x$ we cut out the individual heartbeats $b_1, b_2, \dots$
 
-\paragraph{The twin.} The twin of patient $p$ at time $t$ is
+The twin describes a heartbeat by its five waves (P, Q, R, S, T), each with a position, a height and a width, i.e.\ 15 numbers $\vartheta_p$ for patient $p$ \cite{mcsharry2003dynamical}. Calibrating the twin means choosing $\vartheta_p$ so that the beats it generates match the patient's normal beats. For each new beat $b_k$ the twin predicts a beat $\hat b_k$, and the \emph{deviation score}
 \begin{equation}
-\twin_p(t) = \big(\vartheta_p(t),\ \rho_p(t),\ \mathcal{H}_p(t)\big),
-\label{eq:twin}
+d_k = \| b_k - \hat b_k \|
 \end{equation}
-with ECG model parameters $\vartheta_p$, rhythm state $\rho_p$ (mean heart rate, variability) and history of findings $\mathcal{H}_p$. In the McSharry model \cite{mcsharry2003dynamical} a point circles a unit limit cycle in the $(x,y)$ plane with angular velocity $\omega = 2\pi/RR$, and the ECG is its $z$ coordinate:
-\begin{equation}
-\dot z = -\sum_{i \in \{P,Q,R,S,T\}} a_i\, \Delta\theta_i \exp\!\left(-\frac{\Delta\theta_i^2}{2 b_i^2}\right) - \big(z - z_0(t)\big),
-\qquad \Delta\theta_i = (\theta - \theta_i) \bmod 2\pi .
-\label{eq:ecgsyn}
-\end{equation}
-Each wave is a Gaussian with angle $\theta_i$, amplitude $a_i$ and width $b_i$, so $\vartheta \in \R^{15}$; $z_0$ is a respiratory baseline. $g(\vartheta, RR)$ denotes one generated beat.
+measures how unusual the beat is for this patient. A typical beat gives a small score, while a beat the twin cannot reproduce, for example an extra beat coming from the ventricles, gives a large one. Table~\ref{tab:subproblems} lists the input and output of each agent.
 
-\paragraph{Sub-problems.} Each agent solves one sub-problem (Table~\ref{tab:subproblems}). Calibration (P4) estimates the patient's parameters from clean beats classified as normal, $\mathcal{K}_p$, with a prior around the population parameters $\vartheta_0$:
-\begin{equation}
-\hat\vartheta_p = \arg\min_{\vartheta}\ \sum_{k \in \mathcal{K}_p} \big\| b_k - g(\vartheta, RR_k) \big\|_2^2 + \lambda \big\| \vartheta - \vartheta_0 \big\|^2_{\Sigma^{-1}} .
-\label{eq:calibration}
-\end{equation}
-Each new beat is compared with the beat the twin predicts,
-\begin{equation}
-d_k = \frac{\big\| b_k - g(\hat\vartheta_p, RR_k) \big\|_2}{\hat\sigma_p \sqrt{L}},
-\label{eq:deviation}
-\end{equation}
-where $\hat\sigma_p$ is the patient's noise level, so $d_k \approx 1$ for typical beats. $d_k$ is an extra input to the arrhythmia detector.
+The agents work together as a pipeline (Figure~\ref{fig:graphicalAbstract}). The Signal Monitoring agent cleans the signal and marks segments that are too noisy to use. The Arrhythmia Detection agent labels every beat, using the deviation score as an extra hint. The Physiological Prediction agent forecasts the heart rate. The Twin Calibration agent keeps the twin up to date, using only clean beats that were labelled normal. Finally, the Clinical Recommendation agent collects these results into a short report and highlights anything a doctor should look at.
 
 \begin{table}[htbp]
-\caption{Sub-problems, one per agent.}
+\caption{Input and output of each agent.}
 \label{tab:subproblems}
 \centering
 \small
 \setstretch{1.1}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}p{3.7cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.6cm}@{}}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.0cm}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}X@{}}
 \toprule
-\textbf{Agent} & \textbf{Input $\to$ output} & \textbf{Learning problem} & \textbf{Evaluation} \\
+\textbf{Agent} & \textbf{Input} & \textbf{Output} \\
 \midrule
-(P1) Signal Monitoring & $\tilde x \to$ clean $\hat x$, quality $q \in [0,1]$ & Denoiser $D_\phi$, $\min_\phi \mathbb{E}\|D_\phi(\tilde x) - x\|^2$, trained on clean records plus recorded noise & SNR improvement, RMSE, PRD \\
-\addlinespace
-(P2) Arrhythmia Detection & $b_k$, RR context, $d_k \to \hat y_k \in \{N,S,V,F,Q\}$ & Beat classification into the AAMI EC57 classes \cite{aami2013testing} & Per-class sensitivity and positive predictivity, macro-$F_1$ \\
-\addlinespace
-(P3) Physiological Prediction & RR history, $s \to$ quantiles of the next $H$ RR intervals & Probabilistic multi-horizon forecasting \cite{lim2021temporal} & MAE, quantile loss; vs.\ persistence and autoregression \\
-\addlinespace
-(P4) Twin Calibration & clean normal beats $\to \hat\vartheta_p$, $d_k$ & Eqs.~\eqref{eq:calibration}--\eqref{eq:deviation} & Held-out RMSE; AUROC of $d_k$, ectopic vs.\ normal \\
-\addlinespace
-(P5) Clinical Recommendation & agent outputs $\to$ report (findings, evidence, priority) & Calls the other agents as tools; abstains when $q$ is low & Correctness of findings, latency \\
+Signal Monitoring & raw ECG & cleaned ECG and a signal-quality score \\
+Arrhythmia Detection & heartbeats and their deviation scores & a label for every beat: normal (N), supraventricular (S), ventricular (V), fusion (F) or unknown (Q) \cite{dechazal2004automatic} \\
+Physiological Prediction & recent heart rate & heart-rate forecast \\
+Twin Calibration & clean normal beats & updated twin $\vartheta_p$ and deviation scores $d_k$ \\
+Clinical Recommendation & outputs of all agents & report for the clinician \\
 \bottomrule
 \end{tabularx}
 \end{table}
-
-\paragraph{Evaluation.} We use the inter-patient split of de Chazal et al.~\cite{dechazal2004automatic}: the 44 non-paced MIT-BIH records form two halves of 22 records, one for training and one for testing. Records 201 and 202 come from the same subject and stay together \cite{moody2001impact}. Noise robustness is tested by adding recorded noise \cite{moody1984noise} at several SNRs. Our hypothesis is that adding $d_k$ improves the detection of S and V beats at equal positive predictivity.
 
 \section{Graphical abstract}
 \label{section:graphicalAbstract}
