@@ -1,0 +1,14 @@
+# LaTeX build files (main.pdf is kept: the course asks for the PDF in the repo)
+*.aux
+*.bbl
+*.blg
+*.idx
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.loa
+*.synctex.gz
+*.fls
+*.fdb_latexmk

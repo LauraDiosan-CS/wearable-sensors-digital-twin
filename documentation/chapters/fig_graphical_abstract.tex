@@ -1,0 +1,37 @@
+\begin{center}
+\setstretch{1.0}
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  font=\footnotesize,
+  box/.style={draw, rounded corners=3pt, align=center, inner sep=4pt, minimum height=12mm},
+  io/.style={box, fill=gray!12, draw=gray!60!black, text width=20mm},
+  agent/.style={box, fill=blue!7, draw=blue!55!black, text width=31mm},
+  twinbox/.style={box, fill=green!10, draw=green!45!black, text width=50mm, minimum height=15mm},
+  human/.style={box, fill=orange!12, draw=orange!70!black, text width=18mm},
+  arr/.style={-{Stealth[length=2.2mm]}, semithick},
+  lab/.style={font=\scriptsize, inner sep=1.5pt},
+]
+\node[io] (wear) at (0,0) {\textbf{Wearable}\\single-lead ECG\\PPG, motion};
+\node[agent] (mon) at (3.5,0) {\textbf{Signal Monitoring}\\denoising $D_\phi$\\quality $Q_\psi$};
+\node[agent] (pred) at (7.7,1.25) {\textbf{Physiological}\\\textbf{Prediction}\\$F_\omega$: RR / HR forecast};
+\node[agent] (arr) at (7.7,-1.25) {\textbf{Arrhythmia}\\\textbf{Detection}\\$f_\theta$: beat $\to$ \{N,S,V,F,Q\}};
+\node[agent] (rec) at (11.9,0) {\textbf{Clinical}\\\textbf{Recommendation}\\grounded report $R_W$};
+\node[human] (clin) at (15.8,0) {\textbf{Clinician}\\human in\\the loop};
+\node[agent] (cal) at (3.5,-3.7) {\textbf{Twin Calibration}\\$\hat\vartheta_p$ from clean\\normal beats};
+\node[twinbox] (twin) at (9.5,-3.7) {\textbf{Cardiac digital twin} $\twin_p(t)$\\personal ECG model $g(\hat\vartheta_p,\cdot)$\\rhythm state, history};
+
+\draw[arr] (wear) -- node[lab, above]{$\tilde x(t)$} (mon);
+\draw[arr] (mon.east) -- node[lab, above left, pos=0.5]{$\hat x$, $q$} (pred.west);
+\draw[arr] (mon.east) -- (arr.west);
+\draw[arr] (mon.south) -- node[lab, right]{clean beats, RR} (cal.north);
+\draw[arr] (cal) -- node[lab, above]{update $\hat\vartheta_p$} (twin);
+\draw[arr] (arr.south |- twin.north) -- node[lab, left]{deviation $d_k$} (arr.south);
+\draw[arr] (pred.east) -- node[lab, above right, pos=0.35]{$\hat h$} (rec.west);
+\draw[arr] (arr.east) -- node[lab, below right, pos=0.35]{$\hat y_k$} (rec.west);
+\draw[arr] (rec.south |- twin.north) -- node[lab, right]{twin state} (rec.south);
+\draw[arr] (rec) -- node[lab, above]{report} (clin);
+\draw[arr, dashed] (clin.south) |- node[lab, right, pos=0.3]{feedback} (twin.east);
+\end{tikzpicture}}
+\captionof{figure}{Graphical abstract: five agents share a patient-specific cardiac twin; the clinician's feedback updates the twin.}
+\label{fig:graphicalAbstract}
+\end{center}

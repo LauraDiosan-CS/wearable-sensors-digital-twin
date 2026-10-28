@@ -1,0 +1,78 @@
+\chapter{State of the art/Related work}
+\label{chapter:stateOfArt}
+
+We searched Crossref, Semantic Scholar, OpenAlex, PubMed and the web for work in the five areas below, covering seminal papers and recent (2022--2026) ones.
+
+\section{Cardiac digital twins}
+\label{sec:rw-twins}
+
+Corral-Acero et al.~\cite{corralacero2020digital} define the healthcare digital twin as a tool that integrates an individual's data over time using mechanistic and statistical models, and envision twins fed by wearable data. Niederer et al.~\cite{niederer2021scaling} note that current twins are bespoke and hard to scale. Coorey et al.~\cite{coorey2022health} require bidirectional data exchange with the patient; their review of 88 papers found that existing cardiovascular ``twins'' were simulation models, not real-time systems.
+
+Most implemented twins are biophysical. Gillette et al.~\cite{gillette2021framework} fit a patient's anatomy to MR images and electrophysiology parameters to a 12-lead ECG; functional twinning was shown for a single subject. Simonian et al.~\cite{simonian2025development} build an image-based mitral-valve twin to predict the outcome of valve repair. Thangaraj et al.~\cite{thangaraj2024cardiovascular} describe hybrid twins that combine physiological parameters with lightweight deep learning, and point to smartwatches as a way to close the loop with the patient. Roop et al.~\cite{roop2025tuning} personalise a hybrid-automata model of the conduction system from wearable signals, and the ``Cardio Twin'' \cite{martinezvelazquez2019cardio} is an edge CNN that detects ischaemic heart disease from ECG (85.77\% accuracy).
+
+\paragraph{Difference.} Our twin is a 15-parameter ECG model calibrated from one wearable lead, much cheaper than a biophysical twin. Unlike the Cardio Twin, it is a personalised model rather than a classifier, and clinician feedback flows back into it.
+
+\section{Wearable ECG, signal quality and denoising}
+\label{sec:rw-wearables}
+
+Bayoumy et al.~\cite{bayoumy2021smart} find single-lead ECG useful for common arrhythmias such as AF but not for complex arrhythmias or infarction. In the Apple Heart Study \cite{perez2019large}, 0.52\% of 419,297 participants received an irregular-pulse notification; 34\% of those who returned an ECG patch had AF, and patches were applied on average 13 days after the notification. Bhavsar et al.~\cite{bhavsar2021digital} treat wearable measurements as digital biomarkers and add them to clinical reports. Del-Valle-Soto et al.~\cite{delvallesoto2024unveiling} survey biometric uses of wearables and stress privacy and data security.
+
+Satija et al.~\cite{satija2018review} review ECG quality assessment and call for lightweight real-time methods for wearables. Smital et al.~\cite{smital2020realtime} grade quality continuously into three levels (full waveform, QRS only, unusable). Denoisers are usually tested on the MIT-BIH Noise Stress Test Database, where electrode-motion noise is hardest because it can mimic ectopic beats \cite{moody1984noise}. Sameni et al.~\cite{sameni2007nonlinear} use a dynamical ECG model inside Kalman filters, beating band-pass, adaptive and wavelet filtering. Learned alternatives include a convolutional denoising autoencoder \cite{chiang2019noise} and the diffusion model DeScoD-ECG \cite{li2024descod}.
+
+\paragraph{Difference.} We combine a learned denoiser with graded quality levels \cite{smital2020realtime} and evaluate both by their effect on arrhythmia detection, not in isolation.
+
+\section{Arrhythmia classification}
+\label{sec:rw-classification}
+
+The MIT-BIH Arrhythmia Database has 48 two-channel half-hour recordings from 47 subjects at 360~Hz \cite{moody2001impact}, and the AAMI EC57 standard defines how detectors are tested, with beat classes N, S, V, F and Q \cite{aami2013testing}. De Chazal et al.~\cite{dechazal2004automatic} introduced the inter-patient split; their feature-based classifier reached only 38.5\% positive predictivity on supraventricular beats. Kiranyaz et al.~\cite{kiranyaz2016realtime} train a small 1-D CNN per patient on common data plus the patient's own beats.
+
+Hannun et al.~\cite{hannun2019cardiologist} classify 12 rhythm classes from single-lead ambulatory ECG with a mean ROC AUC of 0.97. Strodthoff et al.~\cite{strodthoff2021deep} benchmark models on PTB-XL, where ResNet- and Inception-style CNNs perform best. ECGFounder \cite{li2025electrocardiogram}, trained on about 10.8 million ECGs, has been adapted to single-lead recordings. Kapoor and Narayanan \cite{kapoor2023leakage} show that using the same patient in training and test data inflates results.
+
+\paragraph{Difference.} We keep a population classifier with a strict inter-patient split. Instead of training a model per patient \cite{kiranyaz2016realtime}, we add the twin's deviation score $d_k$, which needs no labels from the new patient.
+
+\section{Physiological ECG models and forecasting}
+\label{sec:rw-models}
+
+McSharry et al.~\cite{mcsharry2003dynamical} proposed the dynamical model behind our twin (Eq.~\eqref{eq:ecgsyn}). Clifford et al.~\cite{clifford2005model} fit it to each beat for patient-specific filtering and beat clustering, treating beats the model cannot fit as artefacts. Sayadi et al.~\cite{sayadi2010robust} track ECG waves with a model-based Kalman filter and detect premature ventricular contractions from the filter's output (99.10\% accuracy).
+
+For forecasting, the Temporal Fusion Transformer \cite{lim2021temporal} gives interpretable multi-horizon forecasts and PatchTST \cite{nie2023time} uses patches of the series as tokens. A one-layer linear model nevertheless beat Transformer forecasters on nine datasets \cite{zeng2023transformers}, and for wearable heart rate a linear autoregressive model beat LSTMs \cite{staffini2021heart}.
+
+\paragraph{Difference.} We keep the fitted parameters as a persistent twin state that other agents query, and treat beats the model cannot fit as candidate abnormal beats rather than artefacts. Forecasters must beat persistence and autoregressive baselines.
+
+\section{LLM agents for health monitoring}
+\label{sec:rw-agents}
+
+ReAct \cite{yao2023react} interleaves reasoning with tool calls. MDAgents \cite{kim2024mdagents} assigns one model or a group of models to a medical task depending on its complexity and was best on 7 of 10 medical benchmarks. PHIA \cite{merrill2026transforming} analyses wearable data through code generation and retrieval, with 84\% accuracy on numerical questions. Hager et al.~\cite{hager2024evaluation} found that LLMs diagnosed 2,400 real cases significantly worse than physicians and are not ready for autonomous decisions.
+
+\paragraph{Difference.} Our agents orchestrate validated signal models and write reports; they do not diagnose, and a clinician reviews every report.
+
+\section{Positioning}
+\label{sec:rw-positioning}
+
+Table~\ref{tab:positioning} compares representative works. We found no work that combines single-lead wearable input, a calibrated patient-specific ECG model, learned detection and an agent layer.
+
+\begin{table}[htbp]
+\caption{Comparison with related work ($\checkmark$: stated in the cited work).}
+\label{tab:positioning}
+\centering
+\footnotesize
+\setstretch{1.1}
+\newcommand{\y}{$\checkmark$}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\textbf{Work} & \textbf{\shortstack{Single-lead /\\wearable}} & \textbf{\shortstack{Patient-\\specific}} & \textbf{\shortstack{Physiological\\model}} & \textbf{\shortstack{Deep\\learning}} & \textbf{\shortstack{Arrhythmia\\detection}} & \textbf{\shortstack{LLM\\agents}} \\
+\midrule
+Gillette et al.~\cite{gillette2021framework} & & \y & \y & & & \\
+Roop et al.~\cite{roop2025tuning} & \y & \y & \y & & & \\
+Martinez-Velazquez et al.~\cite{martinezvelazquez2019cardio} & & & & \y & & \\
+Clifford et al.~\cite{clifford2005model} & \y & \y & \y & & \y & \\
+Sayadi et al.~\cite{sayadi2010robust} & \y & & \y & & \y & \\
+Kiranyaz et al.~\cite{kiranyaz2016realtime} & \y & \y & & \y & \y & \\
+Hannun et al.~\cite{hannun2019cardiologist} & \y & & & \y & \y & \\
+Merrill et al.~\cite{merrill2026transforming} & \y & & & & & \y \\
+\midrule
+\textbf{This project} & \y & \y & \y & \y & \y & \y \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,44 @@
+\section*{Team}
+
+\begin{center}
+\small
+\setstretch{1.1}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{5.0cm}@{}}
+\toprule
+\textbf{Member} & \textbf{Role} & \textbf{Milestone 1 tasks} \\
+\midrule
+\memberA, [email], [specialisation] & Signal Monitoring agent, data pipeline & Survey: wearable ECG, denoising \\
+\memberB, [email], [specialisation] & Arrhythmia Detection and Physiological Prediction agents & Survey: classification, forecasting \\
+\memberC, [email], [specialisation] & Twin Calibration and Clinical Recommendation agents & Problem definition; survey: twins, agents \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{ganttchart}[
+  hgrid,
+  vgrid={*1{dotted}},
+  x unit=2.3cm,
+  y unit title=0.5cm,
+  y unit chart=0.42cm,
+  title height=1,
+  bar height=0.6,
+  bar top shift=0.2,
+  bar/.append style={fill=blue!25},
+  bar label font=\scriptsize,
+  title label font=\scriptsize\bfseries,
+]{1}{4}
+\gantttitle{Seminar 3}{1} \gantttitle{Seminar 4}{1} \gantttitle{Seminar 6}{1} \gantttitle{Seminar 7}{1} \\
+\ganttbar[bar/.append style={fill=green!45}]{Problem definition, literature review (all)}{1}{1} \\
+\ganttbar{Data and exploratory analysis (A)}{2}{2} \\
+\ganttbar{Denoising and signal quality (A)}{2}{3} \\
+\ganttbar{Arrhythmia classifier (B)}{2}{3} \\
+\ganttbar{Twin calibration (C)}{2}{3} \\
+\ganttbar{Heart-rate forecasting (B)}{3}{3} \\
+\ganttbar{Agent orchestration and reports (C)}{3}{3} \\
+\ganttbar{Deployed app, SWOT, presentation (all)}{4}{4} \\
+\ganttbar{Technical report (all)}{1}{4}
+\end{ganttchart}
+
+\small Work plan (A, B, C: responsible members; green: done).
+\end{center}

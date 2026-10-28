@@ -1,0 +1,163 @@
+%pdflatex main.tex
+%bibtex main
+%pdflatex main.tex
+%pdflatex main.tex
+
+% Based on the course template (2026-2027/Report/texModel/model.tex).
+% Changes to the template: utf8 input (author names with diacritics), tikz/booktabs/tabularx
+% for the graphical abstract and tables, and the plainurl bibliography style (plain + DOI/URL).
+
+\documentclass[runningheads,a4paper,11pt]{report}
+
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{caption}
+\usepackage{comment}
+\usepackage{epsfig}
+\usepackage{fancyhdr}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage[colorlinks]{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{rotating}
+\usepackage{setspace}
+\usepackage{subfigure}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{pgfgantt}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
+\usepackage{titlesec}
+
+% compact chapter headings that do not start a new page (keeps the milestone report short)
+\titleclass{\chapter}{straight}
+\titleformat{\chapter}{\normalfont\LARGE\bfseries}{\thechapter}{0.8em}{}
+\titlespacing*{\chapter}{0pt}{18pt}{10pt}
+
+\geometry{a4paper,top=3cm,left=2cm,right=2cm,bottom=3cm,headheight=24pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{Cardiac Digital Twin from Wearable Sensors}
+\fancyhead[RE,LO]{Team \teamname}
+\fancyfoot[RE,LO]{Advanced Machine Learning --- 2026-2027}
+\fancyfoot[LE,RO]{\thepage}
+
+\renewcommand{\headrulewidth}{2pt}
+\renewcommand{\footrulewidth}{1pt}
+\renewcommand{\headrule}{\hbox to\headwidth{%
+  \color{lime}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrule}{\hbox to\headwidth{%
+  \color{lime}\leaders\hrule height \footrulewidth\hfill}}
+
+% ---- team placeholders: fill these in -------------------------------------------
+\newcommand{\teamname}{[team name]}
+\newcommand{\memberA}{[Member A]}
+\newcommand{\memberB}{[Member B]}
+\newcommand{\memberC}{[Member C]}
+% ---------------------------------------------------------------------------------
+
+\hypersetup{
+pdftitle={AI-Enabled Cardiac Digital Twin from Wearable Sensors},
+pdfauthor={\teamname},
+pdfkeywords={digital twin, ECG, wearable, arrhythmia, denoising, transformers, multi-agent systems},
+bookmarksnumbered,
+pdfstartview={FitH},
+urlcolor=cyan,
+colorlinks=true,
+linkcolor=red,
+citecolor=green,
+}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\twin}{\mathcal{T}}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{0}
+\linespread{1}
+\makeindex
+
+
+\begin{document}
+
+\begin{titlepage}
+\sloppy
+
+\begin{center}
+BABE\c S BOLYAI UNIVERSITY, CLUJ NAPOCA, ROM\^ ANIA
+
+FACULTY OF MATHEMATICS AND COMPUTER SCIENCE
+
+\vspace{5cm}
+
+\Huge \textbf{AI-Enabled Cardiac Digital Twin\\from Wearable Sensors}
+
+\vspace{0.6cm}
+
+\Large Personalised, multi-agent monitoring of single-lead ECG
+
+\vspace{1cm}
+
+\normalsize -- Advanced Machine Learning report --
+
+\vspace{0.3cm}
+
+\normalsize Milestone 1 (Seminar 3): problem description and survey of related work
+
+\end{center}
+
+
+\vspace{4cm}
+
+\begin{flushright}
+\Large{\textbf{Authors}}\\
+\normalsize
+\memberA, [specialisation], [group], [email]\\
+\memberB, [specialisation], [group], [email]\\
+\memberC, [specialisation], [group], [email]
+\end{flushright}
+
+\vspace{3cm}
+
+\begin{center}
+2026-2027
+\end{center}
+
+\end{titlepage}
+
+\pagenumbering{gobble}
+
+\input{chapters/team}
+
+\input{chapters/abstract}
+
+\tableofcontents
+
+% The template's \listoftables, \listoffigures and \listofalgorithms are left out to keep this milestone short.
+
+\newpage
+
+\setstretch{1.5}
+
+\pagenumbering{arabic}
+
+\input{chapters/01_introduction}
+\input{chapters/02_problem}
+\input{chapters/03_related_work}
+\input{chapters/04_conclusion}
+
+\bibliographystyle{plainurl}
+{\small\setstretch{1.0}\bibliography{references}}
+
+\end{document}
