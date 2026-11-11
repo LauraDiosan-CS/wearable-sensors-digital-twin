@@ -5,9 +5,9 @@
 
 \paragraph{Calibration.} Across the 43 patients, the calibrated twin reproduces the patient's median beat with a median error of 0.032~mV, against 0.181~mV for the uncalibrated population twin (Figure~\ref{fig:twin}, left).
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{Fig/s4_twin.pdf}
+\includegraphics[width=0.88\textwidth]{Fig/s4_twin.pdf}
 \caption{Left: twin calibration for one patient. Right: deviation scores of all test beats after calibration; ventricular beats stand out, supraventricular beats do not.}
 \label{fig:twin}
 \end{figure}
@@ -16,7 +16,7 @@
 
 \paragraph{Does the twin help the classifier?} We add the deviation score as an extra feature to the baseline classifier and compare it with the same classifier without it. For a fair comparison, both are trained only on beats after the first 5 minutes, which is why the baseline differs slightly from Table~\ref{tab:detection}. Since each patient is one independent unit, we give 95\% intervals from a bootstrap over the 21 test patients (Table~\ref{tab:ablation}).
 
-\begin{table}[htbp]
+\begin{table}[H]
 \caption{Effect of the deviation score on the baseline classifier (test patients). Differences are relative to the classifier without the score, with 95\% bootstrap intervals over patients.}
 \label{tab:ablation}
 \centering

@@ -54,7 +54,7 @@ def main():
     save_json(results, "denoising")
     c, y, bp, dae = example
     ts = np.arange(dn.SEG) / data.FS
-    fig, axs = plt.subplots(2, 1, figsize=(6.7, 3.2), sharex=True, sharey=True)
+    fig, axs = plt.subplots(2, 1, figsize=(6.7, 3.6), sharex=True, sharey=True, gridspec_kw={"hspace": 0.35})
     axs[0].plot(ts, y, color="#b85450", lw=0.7, label="noisy (electrode motion, 6 dB)")
     axs[0].plot(ts, c, color="#1f4e79", lw=0.9, label="clean")
     axs[1].plot(ts, bp, color="#7f7f7f", lw=0.8, label="band-pass filter")
@@ -62,7 +62,7 @@ def main():
     axs[1].plot(ts, c, color="#1f4e79", lw=0.6, ls="--", label="clean")
     for ax in axs:
         ax.set_ylabel("mV")
-        ax.legend(frameon=False, ncol=3, loc="upper right")
+        ax.legend(frameon=False, ncol=3, loc="lower right", bbox_to_anchor=(1.0, 1.0))  # above the trace
     axs[1].set_xlabel("time (s)")
     save_fig(fig, "s4_denoising_example")
 

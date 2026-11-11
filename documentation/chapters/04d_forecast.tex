@@ -3,7 +3,7 @@
 
 \paragraph{Method.} From the last 20 RR intervals we forecast two targets: the next RR interval, and the average RR interval of the next 10 beats, i.e.\ the heart rate over the next few seconds. We compare persistence (``the next value equals the last one'', or the average of the last 10 for the 10-beat target) with a linear autoregressive model. The model sees the past intervals relative to their own average, so a single model fits slow and fast hearts alike. It is trained on the training patients and tested on the test patients.
 
-\begin{table}[htbp]
+\begin{table}[H]
 \caption{Mean absolute error of RR forecasts on the test patients (milliseconds; lower is better).}
 \label{tab:forecast}
 \centering

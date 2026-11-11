@@ -102,7 +102,7 @@ def main():
         ax.plot(ts, clean, color="#1f4e79", lw=0.8, label="clean")
         ax.set_title(label, loc="left")
         ax.set_ylabel("mV")
-    axs[0].legend(frameon=False, ncol=2, loc="upper right")
+    axs[0].legend(frameon=False, ncol=2, loc="lower right", bbox_to_anchor=(1.0, 1.0))
     axs[-1].set_xlabel("time (s)")
     save_fig(fig, "s4_eda_noise")
 

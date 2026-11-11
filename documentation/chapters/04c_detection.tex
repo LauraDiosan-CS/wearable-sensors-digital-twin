@@ -3,7 +3,7 @@
 
 \paragraph{Method.} Each beat is described by its timing (previous and next RR interval, the local average of the last 10 RR intervals, and the two ratios to it) and its shape. We compare two classifiers. The baseline is a gradient-boosted tree model on the timing features plus a downsampled beat shape, in the spirit of de Chazal et al.~\cite{dechazal2004automatic}. The second is a small 1-D convolutional neural network that reads the whole beat and combines it with the timing features \cite{kiranyaz2016realtime}, trained for 8 epochs with three different random seeds. Both use class weights so that rare classes count as much as normal beats. Models are trained on all training patients and tested on the test patients' beats after their first 5 minutes, the same beats used in the twin experiments (39\,623 beats).
 
-\begin{table}[htbp]
+\begin{table}[H]
 \caption{Beat classification on unseen patients: sensitivity (Se), positive predictivity (+P) and F1 per class. CNN values are the mean of three seeds.}
 \label{tab:detection}
 \centering

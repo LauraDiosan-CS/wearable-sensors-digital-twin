@@ -30,9 +30,7 @@ d_k = \| b_k - \hat b_k \|
 \end{equation}
 measures how unusual the beat is for this patient. A typical beat gives a small score, while a beat the twin cannot reproduce, for example an extra beat coming from the ventricles, gives a large one. Table~\ref{tab:subproblems} lists the input and output of each agent.
 
-The agents work together as a pipeline (Figure~\ref{fig:graphicalAbstract}). The Signal Monitoring agent cleans the signal and marks segments that are too noisy to use. The Arrhythmia Detection agent labels every beat, using the deviation score as an extra hint. The Physiological Prediction agent forecasts the heart rate. The Twin Calibration agent keeps the twin up to date, using only clean beats that were labelled normal. Finally, the Clinical Recommendation agent collects these results into a short report and highlights anything a doctor should look at.
-
-\begin{table}[htbp]
+\begin{table}[H]
 \caption{Input and output of each agent.}
 \label{tab:subproblems}
 \centering
@@ -50,6 +48,8 @@ Clinical Recommendation & outputs of all agents & report for the clinician \\
 \bottomrule
 \end{tabularx}
 \end{table}
+
+The agents work together as a pipeline (Figure~\ref{fig:graphicalAbstract}). The Signal Monitoring agent cleans the signal and marks segments that are too noisy to use. The Arrhythmia Detection agent labels every beat, using the deviation score as an extra hint. The Physiological Prediction agent forecasts the heart rate. The Twin Calibration agent keeps the twin up to date, using only clean beats that were labelled normal. Finally, the Clinical Recommendation agent collects these results into a short report and highlights anything a doctor should look at.
 
 \section{Graphical abstract}
 \label{section:graphicalAbstract}

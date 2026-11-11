@@ -62,14 +62,14 @@ def main():
     # figure: one patient's twin and the deviation score per class
     d, cal = example
     t = np.arange(-data.PRE, data.POST) / data.FS * 1000
-    fig, axs = plt.subplots(1, 2, figsize=(6.7, 2.5))
+    fig, axs = plt.subplots(1, 2, figsize=(6.7, 2.5), gridspec_kw={"wspace": 0.35})
     axs[0].plot(t, cal["template"], color="#1f4e79", lw=1.4, label="patient's median beat")
     axs[0].plot(t, cal["default"], color="#7f7f7f", lw=1.0, ls="--", label="population twin")
     axs[0].plot(t, cal["twin"], color="#2e7d32", lw=1.1, label="calibrated twin")
     axs[0].set_xlabel("ms from R peak")
     axs[0].set_ylabel("mV")
     axs[0].set_title("record 119: twin calibration")
-    axs[0].legend(frameon=False, loc="upper right")
+    axs[0].legend(frameon=False, ncol=2, fontsize=7, loc="upper center", bbox_to_anchor=(0.5, -0.28))
     bins = np.logspace(-0.3, 1.8, 50)
     for i, c in enumerate(data.CLASSES[:3]):
         v = d_twin[labels == i]
