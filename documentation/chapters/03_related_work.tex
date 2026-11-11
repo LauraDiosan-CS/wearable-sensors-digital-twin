@@ -10,7 +10,7 @@ Corral-Acero et al.~\cite{corralacero2020digital} define a healthcare digital tw
 
 Most implemented cardiac twins use hospital data. Gillette et al.~\cite{gillette2021framework} build the heart's anatomy from MR images in a few hours per patient and fit its electrical behaviour to a 12-lead ECG, which they demonstrated for a single subject. Simonian et al.~\cite{simonian2025development} build a twin of the mitral valve that integrates the patient's follow-up data to predict the valve's state after a repair procedure. Thangaraj et al.~\cite{thangaraj2024cardiovascular} describe hybrid twins that combine physiological models with lightweight machine learning. They see smartwatches as a way to close the loop with the patient, but note that this only works if people keep wearing them. Closest to our work, Roop et al.~\cite{roop2025tuning} model the heart's electrical conduction system and personalise it with wearable signals, so that it produces ECGs that match the individual.
 
-\paragraph{Difference.} Our twin needs only a wearable, and it is used for continuous monitoring rather than simulation.
+Our twin needs only a wearable and is used for continuous monitoring.
 
 \section{Wearable ECG and signal quality}
 \label{sec:rw-wearables}
@@ -19,14 +19,14 @@ Bayoumy et al.~\cite{bayoumy2021smart} review wearables in cardiovascular care. 
 
 Noise is the main technical obstacle. Sameni et al.~\cite{sameni2007nonlinear} place a mathematical model of the ECG, the same kind of model our twin is based on, inside a Kalman filter that follows the signal over time. This removed noise better than standard filters over a wide range of noise levels.
 
-\paragraph{Difference.} We judge noise removal by how much it helps arrhythmia detection, not on its own.
+We compare a standard filter with a learned denoiser on real recorded noise, with the aim of measuring how much cleaning helps arrhythmia detection.
 
 \section{Arrhythmia classification}
 \label{sec:rw-classification}
 
 De Chazal et al.~\cite{dechazal2004automatic} split the MIT-BIH Arrhythmia Database into two groups of patients, one for training and one for testing, which became the reference way to evaluate beat classifiers. With this split, their classifier detected some beat types, especially supraventricular beats, poorly. Kiranyaz et al.~\cite{kiranyaz2016realtime} therefore train a small network for each patient, using common data plus the patient's own labelled beats. It is fast enough for real-time monitoring and, according to the authors, could run on a lightweight wearable device. Hannun et al.~\cite{hannun2019cardiologist} trained a deep network on single-lead ambulatory ECG that recognises 12 rhythm classes as well as cardiologists. They see its role in triage, with results confirmed by a clinician.
 
-\paragraph{Difference.} Instead of training a model per patient, we give a general model the twin's deviation score, which needs no labelled data from the new patient.
+We keep one general model and add the twin's deviation score as a feature; the score needs no labelled data from the new patient.
 
 \section{Heart models and forecasting}
 \label{sec:rw-models}
@@ -35,39 +35,11 @@ McSharry et al.~\cite{mcsharry2003dynamical} proposed the heartbeat model behind
 
 For forecasting heart rate, the Temporal Fusion Transformer \cite{lim2021temporal} predicts several steps ahead and shows which inputs matter most. It combines different kinds of input, such as fixed information and past measurements, and was more accurate than earlier methods on real-world datasets.
 
-\paragraph{Difference.} We use the heartbeat model as a personal reference for each patient, not to generate data.
+We fit the heartbeat model to each patient and use it as a personal reference beat.
 
 \section{AI agents in healthcare}
 \label{sec:rw-agents}
 
-PHIA \cite{merrill2026transforming} is a language-model agent that analyses wearable health data by writing code and looking up information. In an evaluation by experts, it answered 84\% of factual numerical questions correctly, showing that agents can reason over personal wearable data when they use tools instead of guessing.
+PHIA \cite{merrill2026transforming} is a language-model agent that analyses wearable health data by writing code and looking up information. In an evaluation by experts, it answered 84\% of factual numerical questions correctly.
 
-\paragraph{Difference.} Our agents coordinate the models and write the report; the clinician makes the decisions.
-
-\section{Positioning}
-\label{sec:rw-positioning}
-
-Table~\ref{tab:positioning} compares our project with the closest works. None of them combines all five features.
-
-\begin{table}[H]
-\caption{Comparison with related work ($\checkmark$: stated in the cited work).}
-\label{tab:positioning}
-\centering
-\small
-\setstretch{1.1}
-\newcommand{\y}{$\checkmark$}
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-\textbf{Work} & \textbf{\shortstack{Single-lead /\\wearable}} & \textbf{Personalised} & \textbf{\shortstack{Heart\\model}} & \textbf{\shortstack{Deep\\learning}} & \textbf{\shortstack{AI\\agents}} \\
-\midrule
-Gillette et al.~\cite{gillette2021framework} & & \y & \y & & \\
-Roop et al.~\cite{roop2025tuning} & \y & \y & \y & & \\
-Sameni et al.~\cite{sameni2007nonlinear} & \y & \y & \y & & \\
-Kiranyaz et al.~\cite{kiranyaz2016realtime} & \y & \y & & \y & \\
-Hannun et al.~\cite{hannun2019cardiologist} & \y & & & \y & \\
-Merrill et al.~\cite{merrill2026transforming} & \y & & & & \y \\
-\midrule
-\textbf{This project} & \y & \y & \y & \y & \y \\
-\bottomrule
-\end{tabular}
-\end{table}
+In our system the agents coordinate the models and write a report, and the decisions stay with the clinician.

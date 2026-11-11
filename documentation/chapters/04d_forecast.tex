@@ -19,4 +19,4 @@ Average of the next 10 RR intervals & 37.5 & \textbf{35.5} \\
 \end{tabular}
 \end{table}
 
-\paragraph{Results.} The autoregressive model clearly improves the next-beat forecast (Table~\ref{tab:forecast}), probably because it can learn that a premature beat is usually followed by a longer pause, which persistence cannot. For the 10-beat average both methods are close, since the heart rate changes slowly over a few seconds. These simple models set the bar that the temporal fusion transformer \cite{lim2021temporal}, planned for the next stage, must beat.
+\paragraph{Results.} The autoregressive model improves the next-beat forecast (Table~\ref{tab:forecast}), probably because it can learn that a premature beat is usually followed by a longer pause, which persistence cannot. For the 10-beat average both methods are close, since the heart rate changes slowly over a few seconds. These two models serve as baselines for more complex forecasters such as the temporal fusion transformer \cite{lim2021temporal}.
