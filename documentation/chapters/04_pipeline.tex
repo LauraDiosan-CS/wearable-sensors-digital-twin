@@ -1,0 +1,23 @@
+\section{Pipeline}
+\label{section:pipeline}
+
+Figure~\ref{fig:graphicalAbstract} shows how the agents connect. For this stage each agent has a first, deliberately simple version, so that we can measure every part before combining them (Table~\ref{tab:pipeline}). The agent orchestration and the clinical report are the subject of the next stage.
+
+\begin{table}[htbp]
+\caption{First version of each agent.}
+\label{tab:pipeline}
+\centering
+\small
+\setstretch{1.1}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.6cm}@{}}
+\toprule
+\textbf{Agent} & \textbf{First version} & \textbf{Code} \\
+\midrule
+Signal Monitoring & band-pass filter vs.\ convolutional denoising autoencoder & \texttt{denoise.py} \\
+Arrhythmia Detection & gradient-boosted trees on RR and shape features vs.\ a 1-D CNN & \texttt{classify.py} \\
+Physiological Prediction & last value (persistence) vs.\ a linear autoregressive model & \texttt{forecast.py} \\
+Twin Calibration & McSharry model fitted to the patient's first 5 minutes & \texttt{twin.py} \\
+Clinical Recommendation & planned for Seminar~6 & -- \\
+\bottomrule
+\end{tabularx}
+\end{table}
