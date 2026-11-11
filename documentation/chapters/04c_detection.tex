@@ -1,0 +1,28 @@
+\section{Arrhythmia Detection: first models}
+\label{section:detection}
+
+\paragraph{Method.} Each beat is described by its timing (previous and next RR interval, the local average of the last 10 RR intervals, and the two ratios to it) and its shape. We compare two classifiers. The baseline is a gradient-boosted tree model on the timing features plus a downsampled beat shape, in the spirit of de Chazal et al.~\cite{dechazal2004automatic}. The second is a small 1-D convolutional neural network that reads the whole beat and combines it with the timing features \cite{kiranyaz2016realtime}, trained for 8 epochs with three different random seeds. Both use class weights so that rare classes count as much as normal beats. Models are trained on all training patients and tested on the test patients' beats after their first 5 minutes, the same beats used in the twin experiments (39\,623 beats).
+
+\begin{table}[htbp]
+\caption{Beat classification on unseen patients: sensitivity (Se), positive predictivity (+P) and F1 per class. CNN values are the mean of three seeds.}
+\label{tab:detection}
+\centering
+\small
+\setstretch{1.1}
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+ & \multicolumn{3}{c}{\textbf{Baseline (boosted trees)}} & & \multicolumn{3}{c}{\textbf{1-D CNN}} \\
+\cmidrule{2-4} \cmidrule{6-8}
+\textbf{Class} & Se & +P & F1 & & Se & +P & F1 \\
+\midrule
+N (normal) & 0.91 & 0.96 & \textbf{0.93} & & 0.86 & 0.98 & 0.92 \\
+S (supraventricular) & 0.17 & 0.32 & 0.22 & & 0.62 & 0.27 & \textbf{0.37} \\
+V (ventricular) & 0.94 & 0.82 & \textbf{0.87} & & 0.89 & 0.73 & 0.80 \\
+F (fusion) & 0.31 & 0.03 & 0.06 & & 0.32 & 0.04 & \textbf{0.08} \\
+\midrule
+Macro-F1 & \multicolumn{3}{c}{0.52} & & \multicolumn{3}{c}{\textbf{0.54} ($\pm$ 0.003)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Results.} Normal and ventricular beats are recognised well even on unseen patients (Table~\ref{tab:detection}). Supraventricular beats remain the hardest class, as de Chazal et al. also found \cite{dechazal2004automatic}: the baseline finds only 17\% of them. The CNN finds 62\%, but at the cost of more false alarms, and it is weaker than the baseline on ventricular beats. Fusion beats are rare and resemble normal beats, so neither model detects them reliably yet. Section~\ref{section:twin} tests whether the twin's deviation score helps.
