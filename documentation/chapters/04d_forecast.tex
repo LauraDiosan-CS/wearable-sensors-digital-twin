@@ -1,0 +1,22 @@
+\section{Physiological Prediction: heart-rate forecasting}
+\label{section:forecast}
+
+\paragraph{Method.} From the last 20 RR intervals we forecast two targets: the next RR interval, and the average RR interval of the next 10 beats, i.e.\ the heart rate over the next few seconds. We compare persistence (``the next value equals the last one'', or the average of the last 10 for the 10-beat target) with a linear autoregressive model. The model sees the past intervals relative to their own average, so a single model fits slow and fast hearts alike. It is trained on the training patients and tested on the test patients.
+
+\begin{table}[htbp]
+\caption{Mean absolute error of RR forecasts on the test patients (milliseconds; lower is better).}
+\label{tab:forecast}
+\centering
+\small
+\setstretch{1.1}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Target} & \textbf{Persistence} & \textbf{Autoregressive} \\
+\midrule
+Next RR interval & 113.0 & \textbf{87.4} \\
+Average of the next 10 RR intervals & 37.5 & \textbf{35.5} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Results.} The autoregressive model clearly improves the next-beat forecast (Table~\ref{tab:forecast}), probably because it can learn that a premature beat is usually followed by a longer pause, which persistence cannot. For the 10-beat average both methods are close, since the heart rate changes slowly over a few seconds. These simple models set the bar that the temporal fusion transformer \cite{lim2021temporal}, planned for the next stage, must beat.
