@@ -1,0 +1,14 @@
+[project]
+name = "wearable-sensors-digital-twin"
+version = "0.1.0"
+description = "A digital twin for wearable sensors, still WIP, so don't know what to add more."
+requires-python = ">=3.14"
+dependencies = [
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "scikit-learn>=1.4",
+    "scipy>=1.11",
+    "torch>=2.2",
+    "wfdb>=4.1",
+]

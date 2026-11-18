@@ -8,6 +8,10 @@ Code for the AI-enabled cardiac digital twin (Advanced Machine Learning, 2026-20
 pip install -r requirements.txt
 python scripts/download_data.py
 ```
+or
+```bash
+uv run scripts/download_data.py
+```
 
 `download_data.py` downloads the MIT-BIH Arrhythmia and MIT-BIH Noise Stress Test databases from
 PhysioNet (about 120 MB) into `data/` and caches the extracted beats. `data/` and `outputs/` are not
