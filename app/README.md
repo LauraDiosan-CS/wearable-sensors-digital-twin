@@ -32,6 +32,11 @@ Run from this folder, in this order:
 
 Figures go to `../documentation/Fig/`, numbers to `outputs/*.json`.
 
+## Tests
+
+`tests/test_twin_fit.py` checks the twin calibration on 9 synthetic beats with known parameters
+(3 heart rates); it needs no downloaded data. Run `python tests/test_twin_fit.py` or `pytest tests`.
+
 ## Layout
 
 ```
