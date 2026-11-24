@@ -29,8 +29,6 @@ MIN_REFIT_BEATS = 50    # fewest beats needed for a refit
 P_NORMAL = 0.9          # a beat must be labeled N with at least this probability to count as normal
 BUFFER_S = 300.0        # how many seconds of recent normal beats are kept for refitting
 RECAL_EVERY_S = 600.0   # "scheduled" policy: refit this often
-CUSUM_K = 0.5           # "drift" policy: score above 1 + K adds to the CUSUM
-CUSUM_H = 20.0          # "drift" policy: refit when the CUSUM passes this
 RECENT_S = 60.0         # "drift" policy: refit on the normal beats of the last RECENT_S seconds only
 ALERT_COOLDOWN_S = 600.0  # "drift" policy: at most one alert in this time; later refits are only logged
 
@@ -44,10 +42,20 @@ class FitRecord(TypedDict):
 
 
 class TwinAgent(Agent):
+    """
+    Twin Calibration agent.
+
+    Args:
+        policy: "none", "scheduled", or "drift"
+        cusum_k: Only for "drift" policy: score above 1 + K adds to the CUSUM
+        cusum_h: Only for "drift" policy: refit when the CUSUM passes this threshold.
+                 Defaults are tuned on DS1, see scripts/tune_cusum.py.
+    """
     name = "twin"
 
-    def __init__(self, policy: Policy = "drift") -> None:
+    def __init__(self, policy: Policy = "drift", cusum_k: float = 0.5, cusum_h: float = 40.0) -> None:
         self.policy = policy
+        self.cusum_k, self.cusum_h = cusum_k, cusum_h  # constructor arguments so experiments can vary them
         self.calib_beats: list[FloatArray] = []     # cold-start buffer: beats of each window
         self.calib_rr: list[FloatArray] = []        # and their RR intervals
         self.twin_beat: FloatArray | None = None    # the twin's beat in mV (252 samples), None until fitted
@@ -94,7 +102,7 @@ class TwinAgent(Agent):
         if normal.any():
             self.normal.append((prev["window"].t_end, prev["beats"][normal], prev["window"].rr[normal, 0]))
         for d in prev["deviation"][normal]:
-            self.cusum = max(0.0, self.cusum + d - 1 - CUSUM_K)
+            self.cusum = max(0.0, self.cusum + d - 1 - self.cusum_k)
         self.normal = [entry for entry in self.normal if entry[0] > state.t - BUFFER_S]
 
     def _recalibrate(self, state: PatientState) -> None:
@@ -108,9 +116,9 @@ class TwinAgent(Agent):
                 reason = f"scheduled, {state.t - self.fitted_at:.0f} s since the last fit"
                 since = state.t - BUFFER_S
             case "drift":
-                if self.cusum <= CUSUM_H:
+                if self.cusum <= self.cusum_h:
                     return
-                reason = f"drift, CUSUM {self.cusum:.1f} > {CUSUM_H:.0f}"
+                reason = f"drift, CUSUM {self.cusum:.1f} > {self.cusum_h:g}"
                 since = state.t - RECENT_S
         recent = [(beats, rr) for t, beats, rr in self.normal if t > since]
         n = sum(len(beats) for beats, _ in recent)
