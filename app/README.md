@@ -32,10 +32,17 @@ Run from this folder, in this order:
 
 Figures go to `../documentation/Fig/`, numbers to `outputs/*.json`.
 
+## Multi-agent system
+
+`cardiactwin/agents/` holds the agents and the orchestrator; the shared contract is `agents/state.py`.
+Run the system with `python scripts/run_agents.py [record ...]` (default: all DS2 records); reports go
+to `outputs/agents/`.
+
 ## Tests
 
 `tests/test_twin_fit.py` checks the twin calibration on 9 synthetic beats with known parameters
-(3 heart rates); it needs no downloaded data. Run `python tests/test_twin_fit.py` or `pytest tests`.
+(3 heart rates); `tests/test_agents_contract.py` checks the agent contract on a hand-made window.
+Neither needs downloaded data. Run `pytest tests`.
 
 ## Layout
 
@@ -47,5 +54,7 @@ cardiactwin/
   classify.py   Arrhythmia Detection agent
   forecast.py   Physiological Prediction agent
   twin.py       Twin Calibration agent (McSharry et al. 2003 ECG model)
+  agents/       shared state, orchestrator, one file per agent
 scripts/        one script per experiment
+tests/          checks that need no downloaded data
 ```
