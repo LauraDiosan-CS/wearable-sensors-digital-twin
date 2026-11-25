@@ -4,7 +4,11 @@ Every window (also rejected ones) it notes how much signal was usable and the he
 record, `report()` collects the facts from the state into a structured report and `explain()` turns the report
 into a short text for the clinician. The report only restates what the other agents found; it does not diagnose.
 
-Current version: the priority is always routine (priority rules come next).
+Priority, with the reasons written into the report and the decision log:
+- urgent: another agent raised an urgent alert (e.g. a run of ventricular beats, a heart-rate alert);
+- review: a review alert (e.g. the patient's normal beat changed), a high ventricular burden, many beats
+  Detection was not sure about, or too much rejected signal to trust the rest;
+- routine: none of the above.
 """
 from collections import Counter
 from typing import Literal, TypedDict, override
@@ -14,6 +18,11 @@ import numpy as np
 from .state import Agent, AlertLevel, Label, PatientState, TwinStatus
 
 type Priority = Literal["routine", "review", "urgent"]
+
+V_BURDEN_REVIEW_PCT = 10.0   # ventricular beats in at least this share of labelled beats -> review
+UNSURE_REVIEW_PCT = 10.0     # at least this share of usable beats labelled "?" -> review
+REJECTED_REVIEW_PCT = 20.0   # at least this share of windows rejected -> review (too little usable signal)
+MAX_ALERTS_LISTED = 3        # how many alerts of one level are quoted in the reasons
 
 
 class HeartRate(TypedDict):
@@ -55,12 +64,12 @@ class ClinicalAgent(Agent):
             self.heart_rates.append(float(60.0 / np.mean(state.window.rr[:, 0])))
 
     def report(self, state: PatientState) -> Report:
-        """Structured report: only facts taken from the state."""
+        """Structured report: facts taken from the state, and the priority decided from them."""
         beats = Counter(row["label"] for row in state.beat_log)
         labelled = sum(beats[c] for c in ("N", "S", "V", "F"))
         usable = labelled + beats["?"]
         hr = np.array(self.heart_rates)
-        return Report(
+        report = Report(
             record=state.record,
             minutes=round(state.t / 60, 1),
             beats=dict(beats),
@@ -76,6 +85,36 @@ class ClinicalAgent(Agent):
             priority="routine",
             reasons=[],
         )
+        report["priority"], report["reasons"] = self._priority(report, state)
+        state.decide(self.name, report["priority"], "; ".join(report["reasons"]))
+        return report
+
+    def _priority(self, report: Report, state: PatientState) -> tuple[Priority, list[str]]:
+        """The highest level that applies, with every reason for it."""
+        urgent = [f"{a['agent']}: {a['text']}" for a in state.alerts if a["level"] == "urgent"]
+        if urgent:
+            return "urgent", self._quote(urgent)
+        review = self._quote([f"{a['agent']}: {a['text']}" for a in state.alerts if a["level"] == "review"])
+        if report["v_burden_pct"] >= V_BURDEN_REVIEW_PCT:
+            review.append(f"ventricular beats are {report['v_burden_pct']}% of the labelled beats "
+                          f"(review from {V_BURDEN_REVIEW_PCT:g}%)")
+        if report["unsure_pct"] >= UNSURE_REVIEW_PCT:
+            review.append(f"Detection was not sure about {report['unsure_pct']}% of the beats "
+                          f"(review from {UNSURE_REVIEW_PCT:g}%)")
+        if report["signal_rejected_pct"] >= REJECTED_REVIEW_PCT:
+            review.append(f"{report['signal_rejected_pct']}% of the signal was rejected "
+                          f"(review from {REJECTED_REVIEW_PCT:g}%)")
+        if review:
+            return "review", review
+        return "routine", ["no alerts, and all measures below the review thresholds"]
+
+    @staticmethod
+    def _quote(alerts: list[str]) -> list[str]:
+        """The first MAX_ALERTS_LISTED different alerts (repeats counted), plus how many more there were."""
+        counts = Counter(alerts)  # keeps the order in which the alerts first appeared
+        quoted = [a if n == 1 else f"{a} ({n} times)" for a, n in counts.items()]
+        more = len(quoted) - MAX_ALERTS_LISTED
+        return quoted[:MAX_ALERTS_LISTED] + ([f"and {more} more alerts of this level"] if more > 0 else [])
 
     def explain(self, report: Report) -> str:
         """Readable text for the clinician, from a fixed template."""
