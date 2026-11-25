@@ -1,0 +1,27 @@
+\section{Architecture}
+\label{section:architecture}
+
+A recording is replayed in 10-second windows, in time order, as if it arrived from a wearable. For every window the five agents of Figure~\ref{fig:graphicalAbstract} run in a fixed order: Signal Monitoring, Twin Calibration, Arrhythmia Detection, Physiological Prediction and Clinical Recommendation. If Signal Monitoring rejects a window as unusable, the three agents in the middle skip it. The positions of the beats are taken from the database annotations.
+
+\paragraph{Shared patient state.} The agents do not call each other. They share one patient state, and each agent writes only its own fields (Table~\ref{tab:agents}). The results of the previous window are kept, so an agent can use what the others decided one window earlier; the twin, for example, learns only from beats that Arrhythmia Detection has already labelled as normal. Anything an agent keeps for itself, such as the twin's parameters, stays inside that agent. The agents never see the cardiologists' labels; these are only used afterwards, to evaluate the results.
+
+\begin{table}[H]
+\caption{What each agent decides and what it writes into the shared patient state.}
+\label{tab:agents}
+\centering
+\small
+\setstretch{1.1}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.3cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{4.4cm}@{}}
+\toprule
+\textbf{Agent} & \textbf{Decides} & \textbf{Writes} \\
+\midrule
+Signal Monitoring & whether a window is usable, and how to clean it & cleaned beats, quality score \\
+Twin Calibration & when to refit the twin & deviation score of each beat \\
+Arrhythmia Detection & the class of each beat, or that it is not sure & beat labels and probabilities, event alerts \\
+Physiological Prediction & whether the expected heart rate needs an alert & heart-rate forecast, alerts \\
+Clinical Recommendation & the priority of the report & the report and its text \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Decision log and alerts.} Every decision is written to a log with its time, the agent, the action and the reason, for example (record 212, minute 19) \emph{``twin, recalibrate: drift, CUSUM 41.3 > 40; refitted on the median of 75 confident normal beats from the last 60~s''}. Alerts for the clinician have a level (info, review or urgent) and are collected for the Clinical Recommendation agent. The log shows afterwards why the system reported what it did.
