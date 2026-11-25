@@ -1,13 +1,7 @@
 \section{Refitting the twin when the patient's normal beat changes}
 \label{section:drift}
 
-The twin is fitted once, on the first five minutes of a recording. If the patient's normal beat changes later, normal beats get high deviation scores and can be mistaken for abnormal ones. The Twin Calibration agent therefore decides when to refit the twin, with one of three policies:
-\begin{itemize}
-	\item \emph{none}: the twin is never refitted;
-	\item \emph{scheduled}: the twin is refitted every 10 minutes, on the normal beats of the last 5 minutes;
-	\item \emph{drift}: the agent keeps a running sum (CUSUM) of how far the scores of normal beats lie above $1 + K$, and refits the twin on the normal beats of the last minute when this sum passes a threshold $H$. It then also sends the clinician a review alert, at most once every 10 minutes.
-\end{itemize}
-Only beats that Arrhythmia Detection labels as normal with a probability of at least 0.9 are used, so arrhythmic beats are not taken as a change of the normal beat.
+If the patient's normal beat changes after the twin was fitted, normal beats get high deviation scores and can be mistaken for abnormal ones. This section compares the Twin Calibration agent's three refitting policies (none, scheduled and drift; Section~\ref{section:twinClinical}).
 
 \paragraph{Choosing $K$ and $H$.} We ran the agent with the drift policy on the training patients for four combinations of $K$ and $H$. Without any refits, 4.3\% of the normal beats had a score above 3. With $K = 0.5$ and $H = 40$ this fell to 1.9\%, with 1.9 refits per hour. $H = 20$ gave almost the same share (1.8\%) with 4.6 refits per hour, and $K = 1$ left more normal beats with high scores (2.3\%). We use $K = 0.5$ and $H = 40$. These runs also showed that the normal beat changes during several training recordings without any added change.
 

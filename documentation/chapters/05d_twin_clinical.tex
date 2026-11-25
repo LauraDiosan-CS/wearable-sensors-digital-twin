@@ -1,0 +1,20 @@
+\section{Twin Calibration and Clinical Recommendation}
+\label{section:twinClinical}
+
+\paragraph{Twin Calibration.} During the first five minutes the agent only collects beats. It then fits the twin to their median beat, as in Section~\ref{section:twin}, and from then on gives every beat a deviation score; before that, beats get no score. Beats that Arrhythmia Detection labelled as normal with a probability of at least 0.9 are kept for five minutes, and their scores are added up in a running sum (CUSUM) that only grows while normal beats score above $1 + K$. The agent refits the twin with one of three policies:
+\begin{itemize}
+	\item \emph{none}: never;
+	\item \emph{scheduled}: every 10 minutes, on the normal beats of the last 5 minutes;
+	\item \emph{drift}: when the CUSUM passes a threshold $H$, on the normal beats of the last minute, since older beats no longer describe the patient. It then also raises a review alert, at most once every 10 minutes.
+\end{itemize}
+We use the drift policy with $K = 0.5$ and $H = 40$, chosen on the training patients (Section~\ref{section:drift}). Every fit is logged with its reason, and the twin's parameters after each fit are kept.
+
+\paragraph{Clinical Recommendation.} At the end of a recording the agent collects the facts from the patient state: the number of beats of each class, the share of ventricular beats, the share of beats Arrhythmia Detection was not sure about, the share of rejected signal, the heart rate, the alerts of the other agents and how often the twin was refitted. From these it sets a priority, with the reasons written into the report and the decision log:
+\begin{itemize}
+	\item \emph{urgent}: another agent raised an urgent alert, for example a run of ventricular beats or a heart rate outside the safe range;
+	\item \emph{review}: a review alert (for example, the patient's normal beat changed), ventricular beats in at least 10\% of the labelled beats, at least 10\% of beats labelled as not sure, or at least 20\% of the signal rejected;
+	\item \emph{routine}: none of the above.
+\end{itemize}
+The agent combines what the others found; it does not make a diagnosis.
+
+The report is shown to the clinician as fixed lines of facts. Optionally, a language model running locally (Ollama; we used Qwen2.5 with 7B parameters) writes a short summary of these facts, which is shown above them and labelled as written by a language model. The summary is only added if it states the priority and contains no number that is not in the report; otherwise only the facts are shown, and the log says why. These checks cannot catch every mistake: in one test the summary stated that ``the monitoring was interrupted'', which was not true but contains no number. This is why the facts are always shown below the summary.

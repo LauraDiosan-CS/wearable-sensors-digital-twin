@@ -47,6 +47,14 @@ to `outputs/agents/`.
 `tune_cusum.py` and `exp_drift.py` use the cardiologists' labels in place of Arrhythmia Detection (a perfect
 detector), so they measure the twin's policy alone.
 
+The Clinical Recommendation agent writes its report as fixed lines of facts.
+To add a short summary written by a local LLM above the facts, run [Ollama](https://ollama.com), pull a model and set:
+```batch
+set CARDIACTWIN_OLLAMA_MODEL=qwen2.5:7b
+```
+The summary is labelled as written by a language model, and only added if it keeps the priority and adds no
+number that is not in the report; otherwise only the facts are shown. The choice is written to the decision log.
+
 ## Tests
 
 - `tests/test_twin_fit.py` checks the twin calibration on 9 synthetic beats with known parameters
