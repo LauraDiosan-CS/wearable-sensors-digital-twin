@@ -38,11 +38,22 @@ Figures go to `../documentation/Fig/`, numbers to `outputs/*.json`.
 Run the system with `python scripts/run_agents.py [record ...]` (default: all DS2 records); reports go
 to `outputs/agents/`.
 
+| Script | Agent | What it does |
+|---|---|---|
+| `scripts/run_agents.py` | all | runs the whole system on test records, saves each clinical report |
+| `scripts/tune_cusum.py` | Twin Calibration | picks the drift CUSUM thresholds on the training patients (DS1) |
+| `scripts/exp_drift.py` | Twin Calibration | E4: never / scheduled / drift-triggered recalibration, with and without an injected T-wave drift (DS2) |
+
+`tune_cusum.py` and `exp_drift.py` use the cardiologists' labels in place of Arrhythmia Detection (a perfect
+detector), so they measure the twin's policy alone.
+
 ## Tests
 
-`tests/test_twin_fit.py` checks the twin calibration on 9 synthetic beats with known parameters
-(3 heart rates); `tests/test_agents_contract.py` checks the agent contract on a hand-made window.
-Neither needs downloaded data. Run `pytest tests`.
+- `tests/test_twin_fit.py` checks the twin calibration on 9 synthetic beats with known parameters
+(3 heart rates)
+- `tests/test_agents_contract.py` checks the agent contract on a hand-made window
+- `tests/test_twin_agent.py` checks the Twin Calibration agent (cold start, scoring, learning, the three
+recalibration policies) on synthetic beats. None of them needs downloaded data. Run `pytest tests`.
 
 ## Layout
 
