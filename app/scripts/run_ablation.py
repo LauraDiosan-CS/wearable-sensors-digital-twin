@@ -26,19 +26,24 @@ def summary(m):
     return {"macro_F1": m["macro_F1"], **{c: m[c] for c in cl.EVAL_CLASSES}}
 
 
+def f1_differences(y, pred_base, pred_other):
+    """(other - base) for macro-F1 and each class's F1."""
+    mb, mo = cl.metrics(y, pred_base), cl.metrics(y, pred_other)
+    return {"macro_F1": mo["macro_F1"] - mb["macro_F1"], **{f"{c}_F1": mo[c]["F1"] - mb[c]["F1"] for c in cl.EVAL_CLASSES}}
+
+
 def bootstrap_diff(y, preds, base, other, records, rng):
-    """95% interval of (other - base) for macro-F1 and per-class F1, resampling test patients."""
+    """Difference (other - base) on all test beats, with a 95% interval from resampling the test patients."""
     uniq = np.unique(records)
     idx = {r: np.flatnonzero(records == r) for r in uniq}
-    keys = ["macro_F1"] + [f"{c}_F1" for c in cl.EVAL_CLASSES]
-    diffs = {k: [] for k in keys}
+    actual = f1_differences(y, preds[base], preds[other])
+    diffs = {k: [] for k in actual}
     for _ in range(BOOTSTRAP):
         sel = np.concatenate([idx[r] for r in rng.choice(uniq, size=len(uniq), replace=True)])
-        mb, mo = cl.metrics(y[sel], preds[base][sel]), cl.metrics(y[sel], preds[other][sel])
-        diffs["macro_F1"].append(mo["macro_F1"] - mb["macro_F1"])
-        for c in cl.EVAL_CLASSES:
-            diffs[f"{c}_F1"].append(mo[c]["F1"] - mb[c]["F1"])
-    return {k: {"mean": float(np.mean(v)), "ci95": [float(np.percentile(v, 2.5)), float(np.percentile(v, 97.5))]}
+        for k, v in f1_differences(y[sel], preds[base][sel], preds[other][sel]).items():
+            diffs[k].append(v)
+    return {k: {"difference": float(actual[k]),
+                "ci95": [float(np.percentile(v, 2.5)), float(np.percentile(v, 97.5))]}
             for k, v in diffs.items()}
 
 
@@ -69,7 +74,7 @@ def main():
     for other in ("with twin deviation", "with template deviation (control)"):
         results[f"difference: {other}"] = bootstrap_diff(test["labels"], preds, "without deviation", other,
                                                          test["record"], rng)
-        print(other, {k: (round(v["mean"], 3), [round(x, 3) for x in v["ci95"]])
+        print(other, {k: (round(v["difference"], 3), [round(x, 3) for x in v["ci95"]])
                       for k, v in results[f"difference: {other}"].items()}, flush=True)
     save_json(results, "ablation")
 
