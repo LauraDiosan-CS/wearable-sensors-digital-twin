@@ -11,7 +11,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np  # noqa: E402
 
 from cardiactwin.agents import Agent, PatientState, step_window  # noqa: E402
-from cardiactwin.agents.clinical import ClinicalAgent, Report  # noqa: E402
+from cardiactwin.agents import llm  # noqa: E402
+from cardiactwin.agents.clinical import SUMMARY_LABEL, ClinicalAgent, Report  # noqa: E402
 from cardiactwin.agents.state import AlertLevel, Label  # noqa: E402
 from test_agents_contract import RejectAll, make_window  # noqa: E402
 
@@ -67,7 +68,7 @@ def test_alerts_and_twin_refits_are_counted() -> None:
 
 
 def test_explain_mentions_the_main_facts() -> None:
-    clinical, state = ClinicalAgent(), PatientState(7)
+    clinical, state = ClinicalAgent(llm=None), PatientState(7)
     step_window(state, make_window(t_start=10), [FixedLabels(["N"] * 12), clinical])
     text = clinical.explain(clinical.report(state))
     assert "Record 7" in text and "Priority: routine" in text and "75 bpm" in text
@@ -120,4 +121,58 @@ def test_only_the_first_alerts_are_quoted() -> None:
 
 def test_repeated_alerts_are_quoted_once_with_a_count() -> None:
     report, _ = report_for(["N"] * 12, [("twin", "review", "normal beat changed")] * 3)
-    assert report["reasons"] == ["twin: normal beat changed (3 times)"]
+    assert report["reasons"] == ["twin: normal beat changed (this alert was raised 3 times)"]
+
+
+# --- text: template and optional LLM ---------------------------------------------------------------------
+
+
+def explained(answer: str | Exception) -> tuple[str, str, PatientState]:
+    """Explain a routine report (75 bpm) with a fake LLM; returns (text, template text, state)."""
+    report, state = report_for(["N"] * 12)
+
+    def fake_llm(instructions: str, text: str) -> str:
+        if isinstance(answer, Exception):
+            raise answer
+        return answer
+
+    template = ClinicalAgent(llm=None).explain(report)
+    return ClinicalAgent(llm=fake_llm).explain(report, state), template, state
+
+
+def text_decision(state: PatientState) -> str:
+    return [row["reason"] for row in state.log if row["agent"] == "clinical" and row["action"] == "text"][-1]
+
+
+def test_llm_summary_is_shown_above_the_facts_when_it_passes_the_checks() -> None:
+    answer = "Priority: routine. All beats were normal and the heart rate was 75 bpm."
+    text, template, state = explained(answer)
+    assert text == f"{SUMMARY_LABEL}\n{answer}\n\nFacts:\n{template}"
+    assert text_decision(state).startswith("LLM summary added")
+
+
+def test_llm_answer_with_an_invented_number_is_left_out() -> None:
+    text, template, state = explained("Priority: routine. The heart rate was 80 bpm.")
+    assert text == template and "80" in text_decision(state)
+
+
+def test_llm_answer_without_the_priority_is_left_out() -> None:
+    text, template, state = explained("The heart rate was 75 bpm.")
+    assert text == template and "priority" in text_decision(state)
+
+
+def test_llm_failure_leaves_only_the_facts() -> None:
+    text, template, state = explained(ConnectionError("no server"))
+    assert text == template and "ConnectionError" in text_decision(state)
+
+
+def test_llm_is_off_unless_the_environment_names_a_model(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.delenv(llm.MODEL_ENV, raising=False)
+    assert ClinicalAgent().llm is None
+    monkeypatch.setenv(llm.MODEL_ENV, "some-model")
+    assert callable(ClinicalAgent().llm)
+
+
+def test_numbers_are_compared_by_value() -> None:
+    text, _, state = explained("Priority: routine. 0% of the signal was rejected; heart rate 75.0 bpm.")
+    assert text.startswith(SUMMARY_LABEL) and text_decision(state).startswith("LLM summary added")

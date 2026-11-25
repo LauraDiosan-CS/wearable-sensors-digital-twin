@@ -33,7 +33,7 @@ def main() -> None:
         state, agents, truth = run_record(record)
         clinical = next(a for a in agents if isinstance(a, ClinicalAgent))
         report = clinical.report(state)
-        text = clinical.explain(report)
+        text = clinical.explain(report, state)
         with open(out_dir / f"{record}.json", "w", encoding="utf-8") as f:
             json.dump({"report": report, "text": text, "alerts": state.alerts, "log": state.log}, f, indent=1)
         y_true.append(to_index(truth))
